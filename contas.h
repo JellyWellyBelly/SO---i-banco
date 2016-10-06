@@ -11,6 +11,7 @@
 #define CUSTOMANUTENCAO 1
 
 #define ATRASO 1
+
 #define ZERO "0"
 
 void inicializarContas();
@@ -18,7 +19,7 @@ int contaExiste(int idConta);
 int debitar(int idConta, int valor);
 int creditar(int idConta, int valor);
 int lerSaldo(int idConta);
-int simular(char* arg2);
+void simular(char* arg2);
 
 
 #endif

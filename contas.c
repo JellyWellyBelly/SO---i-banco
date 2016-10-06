@@ -5,7 +5,7 @@
 #include <string.h>
 
 #define atrasar() sleep(ATRASO)
-		     
+
 int contasSaldos[NUM_CONTAS];
 
 
@@ -21,20 +21,20 @@ void inicializarContas() {
 
 int debitar(int idConta, int valor) {
   atrasar();
-  if (!contaExiste(idConta))
+  if (!contaExiste(idConta)) /* verifica se conta existe */
     return -1;
-  if (contasSaldos[idConta - 1] < valor)
+  if (contasSaldos[idConta - 1] < valor) /* verifica se tem saldo suficiente */
     return -1;
   atrasar();
-  contasSaldos[idConta - 1] -= valor;
+  contasSaldos[idConta - 1] -= valor; /* retira dinheiro hehehehe */
   return 0;
 }
 
 int creditar(int idConta, int valor) {
   atrasar();
-  if (!contaExiste(idConta))
+  if (!contaExiste(idConta)) /* verifica se conta existe */
     return -1;
-  contasSaldos[idConta - 1] += valor;
+  contasSaldos[idConta - 1] += valor; /* mete plin plin */
   return 0;
 }
 
@@ -46,20 +46,21 @@ int lerSaldo(int idConta) {
 }
 
 
-int simular(char *arg2) {
+void simular(char *arg2) {
   int numAnos, i, j;
   int newValue[NUM_CONTAS];
   numAnos = atoi(arg2);
 
   if(numAnos <= 0)
-    return -1;
+    exit(EXIT_FAILURE);
 
-  if(numAnos == 0 && strcmp(arg2,ZERO) == 0)
-    return -1;
+  if(numAnos == 0 && strcmp(arg2,ZERO) != 0)
+    exit(EXIT_FAILURE);
 
   for(j = 0; j < NUM_CONTAS; j++) {
     newValue[j] = contasSaldos[j];
-  }  
+  }
+
   i = 0;
   while(i <= numAnos) {
     atrasar();
@@ -77,5 +78,5 @@ int simular(char *arg2) {
     i++;
   }
 
-  return 0;
+  exit(EXIT_SUCCESS);
 }
