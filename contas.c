@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <signal.h>
 
 #define atrasar() sleep(ATRASO)
 
@@ -45,6 +46,9 @@ int lerSaldo(int idConta) {
   return contasSaldos[idConta - 1];
 }
 
+void apanha_sinal() {
+  signal(SIGUSR1,apanha_sinal);
+}
 
 void simular(char *arg2) {
   int numAnos, i, j;
@@ -52,10 +56,10 @@ void simular(char *arg2) {
   numAnos = atoi(arg2);
 
   if(numAnos <= 0)
-    exit(EXIT_FAILURE);
+    exit(1);
 
   if(numAnos == 0 && strcmp(arg2,ZERO) != 0)
-    exit(EXIT_FAILURE);
+    exit(1);
 
   for(j = 0; j < NUM_CONTAS; j++) {
     newValue[j] = contasSaldos[j];
@@ -64,10 +68,14 @@ void simular(char *arg2) {
   i = 0;
   while(i <= numAnos) {
     atrasar();
+
+    signal(SIGUSR1,apanha_sinal);
+
     printf("SIMULACAO: Ano %d\n", i);
     printf("=================\n");
     for(j = 0; j < NUM_CONTAS; j++) {
       int n = j + 1;
+      
       if(newValue[j] >= 0)
         printf("Conta %d, Saldo %d\n", n, newValue[j]);
       else
@@ -78,5 +86,5 @@ void simular(char *arg2) {
     i++;
   }
 
-  exit(EXIT_SUCCESS);
+  exit(0);
 }

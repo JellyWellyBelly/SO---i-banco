@@ -5,32 +5,36 @@
 
 #include "commandlinereader.h"
 #include "contas.h"
+#include "funcoesaux.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
-#include <funcoesaux.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <signal.h>
 
 #define COMANDO_DEBITAR "debitar"
 #define COMANDO_CREDITAR "creditar"
 #define COMANDO_LER_SALDO "lerSaldo"
 #define COMANDO_SIMULAR "simular"
 #define COMANDO_SAIR "sair"
+#define COMANDO_SAIR_AGORA "agora"
 
 #define MAXARGS 3
 #define BUFFER_SIZE 100
-#define MAXPROCESSOS 20
+#define MAXPROSS 20
 
 
 int main (int argc, char** argv) {
 
     char *args[MAXARGS + 1];
     char buffer[BUFFER_SIZE];
-    int pid_list[MAXPROCESSOS];
-    init_vec_0(pid_list, MAXPROCESSOS); //Cada entrada do vetor corresponde a um pid. 0 é default e nao corresponde a nenhum pid
+    int pid_list[MAXPROSS], status;
 
     inicializarContas();
-
+    init_vec_0(pid_list,MAXPROSS);
+    
     printf("Bem-vinda/o ao i-banco\n\n");
       
     while (1) {
@@ -39,12 +43,28 @@ int main (int argc, char** argv) {
         numargs = readLineArguments(args, MAXARGS+1, buffer, BUFFER_SIZE);
 
         /* EOF (end of file) do stdin ou comando "sair" */
-        if (numargs < 0 ||
-	        (numargs > 0 && (strcmp(args[0], COMANDO_SAIR) == 0))) {
-            
-            /* POR COMPLETAR */
+        if (numargs < 0 || (numargs > 0 && (strcmp(args[0], COMANDO_SAIR) == 0))) {
+            if (numargs == 1) {                             /* sair */
+                int i, pid_wait;
 
-            printf("Comando nao implementado\n");            
+                printf("i-banco vai terminar.\n--\n");
+                for(i = 0; i < MAXPROSS; i++)
+                    if(pid_list[i] != 0) {
+                        pid_wait = waitpid(pid_list[i], &status, 0);
+                        printf("FILHO TERMINADO (PID=%d; terminou %s)\n", pid_wait, (status == 0) ? "normalmente" : "abruptamente");
+                    }
+                printf("--\ni-banco terminou.\n");
+            }
+
+            else if(numargs == 2 && (strcmp(args[1], COMANDO_SAIR_AGORA) == 0)) {                  /* sair agora */
+
+                signal(SIGUSR1,apanha_sinal);
+
+            }
+
+            else {
+                printf("%s: Sintaxe inválida, tente de novo.\n", COMANDO_SAIR);
+            }            
             
             exit(EXIT_SUCCESS);
         }
@@ -67,98 +87,71 @@ int main (int argc, char** argv) {
             if (debitar (idConta, valor) < 0)
 	           printf("%s(%d, %d): OK\n\n", COMANDO_DEBITAR, idConta, valor);
             else
-                printf("%s(%d, %d): OK\n\n", COMANDO_DEBITAR, idConta, valor);
-    }
-
-
-
-    /* Creditar */
-    else if (strcmp(args[0], COMANDO_CREDITAR) == 0) {
-        int idConta, valor;
-        if (numargs < 3) {
-            printf("%s: Sintaxe inválida, tente de novo.\n", COMANDO_CREDITAR);
-            continue;
+               printf("%s(%d, %d): OK\n\n", COMANDO_DEBITAR, idConta, valor);
         }
 
-        idConta = atoi(args[1]);
-        valor = atoi(args[2]);
+        /* Creditar */
+        else if (strcmp(args[0], COMANDO_CREDITAR) == 0) {
+            int idConta, valor;
+            if (numargs < 3) {
+                printf("%s: Sintaxe inválida, tente de novo.\n", COMANDO_CREDITAR);
+                continue;
+            }
 
-        if (creditar (idConta, valor) < 0)
-            printf("%s(%d, %d): Erro\n\n", COMANDO_CREDITAR, idConta, valor);
-        else
-            printf("%s(%d, %d): OK\n\n", COMANDO_CREDITAR, idConta, valor);
-    }
+            idConta = atoi(args[1]);
+            valor = atoi(args[2]);
 
-
-
-    /* Ler Saldo */
-    else if (strcmp(args[0], COMANDO_LER_SALDO) == 0) {
-        int idConta, saldo;
-
-        if (numargs < 2) {
-            printf("%s: Sintaxe inválida, tente de novo.\n", COMANDO_LER_SALDO);
-            continue;
+            if (creditar (idConta, valor) < 0)
+                printf("%s(%d, %d): Erro\n\n", COMANDO_CREDITAR, idConta, valor);
+            else
+                printf("%s(%d, %d): OK\n\n", COMANDO_CREDITAR, idConta, valor);
         }
-        idConta = atoi(args[1]);
-        saldo = lerSaldo (idConta);
-        if (saldo < 0)
-            printf("%s(%d): Erro.\n\n", COMANDO_LER_SALDO, idConta);
-        else
-            printf("%s(%d): O saldo da conta é %d.\n\n", COMANDO_LER_SALDO, idConta, saldo);
-    }
 
+        /* Ler Saldo */
+        else if (strcmp(args[0], COMANDO_LER_SALDO) == 0) {
+            int idConta, saldo;
 
+            if (numargs < 2) {
+                printf("%s: Sintaxe inválida, tente de novo.\n", COMANDO_LER_SALDO);
+                continue;
+            }
+            idConta = atoi(args[1]);
+            saldo = lerSaldo (idConta);
+            if (saldo < 0)
+                printf("%s(%d): Erro.\n\n", COMANDO_LER_SALDO, idConta);
+            else
+                printf("%s(%d): O saldo da conta é %d.\n\n", COMANDO_LER_SALDO, idConta, saldo);
+        }
 
+        /* Simular */
+        else if (strcmp(args[0], COMANDO_SIMULAR) == 0) {
+            int pid;
 
+            if (numargs < 2) {
+                printf("%s: Sintaxe inválida, tente de novo.\n", COMANDO_SIMULAR);
+                continue;
+            }
 
+           if(list_full(pid_list, MAXPROSS) == TRUE) {
+                printf("Erro. Demasiados processos\n\n");
+                continue;
+            } 
 
+            pid = fork();
 
+            if(pid < 0) {
+                printf("Erro. Processo não criado\n\n");
+                continue;
+            }
 
-
-
-
-
-
-
-
-
-    /* Simular */
-    else if (strcmp(args[0], COMANDO_SIMULAR) == 0) {
-
-        if (numargs != 2){
-
-            printf("%s: Sintaxe inválida, tente de novo.\n", COMANDO_LER_SALDO);
-            continue;
-		}
-       
-        if (list_full(pid_list, MAXPROCESSOS))
-        {
-        	printf("Erro: Demasiadas simulacoes a correr em simultaneo.\n");
-   			continue;
-   		}
-
-        int pid = fork(); /* Criacao do processo para correr simulacao*/
-
-   		if (pid < 0){ /* Verificacao do fork */
-   			printf("Erro: Criação do processo de simulação.\n");
-   			continue;
-   		}
-
-        push_pid(pid_list, MAXPROCESSOS, pid); /* Atualizacao da lista dos pids */
-
-        if (pid == 0){ /*codigo executado pelo filho*/
+            push_pid(pid_list, MAXPROSS, pid); 
             
-           int estado = simular(args[1]);
-           if (estado == -1){
-               printf("Erro: Simulação terminou abruptamente. \n");
-           }
+            if(pid == 0)                        /* processo filho - simular */
+                simular(args[1]);
+        }
+
+        else {
+          printf("Comando desconhecido. Tente de novo.\n");
         }
     }
-
-    else {
-      printf("Comando desconhecido. Tente de novo.\n");
-    }
-
-  } 
 }
-
