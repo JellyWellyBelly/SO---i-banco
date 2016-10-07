@@ -20,6 +20,6 @@ int debitar(int idConta, int valor);
 int creditar(int idConta, int valor);
 int lerSaldo(int idConta);
 void simular(char* arg2);
-void apanha_sinal();
+void apanha_sinal(int pid);
 
 #endif

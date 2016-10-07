@@ -31,6 +31,7 @@ int main (int argc, char** argv) {
     char *args[MAXARGS + 1];
     char buffer[BUFFER_SIZE];
     int pid_list[MAXPROSS], status;
+    int i = 0; /*Iterador para uso geral */
 
     inicializarContas();
     init_vec_0(pid_list,MAXPROSS);
@@ -56,10 +57,17 @@ int main (int argc, char** argv) {
                 printf("--\ni-banco terminou.\n");
             }
 
-            else if(numargs == 2 && (strcmp(args[1], COMANDO_SAIR_AGORA) == 0)) {                  /* sair agora */
-
-                signal(SIGUSR1,apanha_sinal);
-
+            else if(numargs == 2 && (strcmp(args[1], COMANDO_SAIR_AGORA) == 0)) {
+            	int sucesso;
+            	i = 0;
+            	while (i < MAXPROSS){
+            		if (pid_list[i] != 0){
+            			sucesso = kill(pid_list[i],SIGUSR1);
+            			if (sucesso == -1)
+            				printf("Erro: Sinal de terminio nao foi possivel de ser enviado ao processo %d.", pid_list[i]);
+            		}
+            		i++;
+            	}
             }
 
             else {
@@ -125,6 +133,7 @@ int main (int argc, char** argv) {
 
         /* Simular */
         else if (strcmp(args[0], COMANDO_SIMULAR) == 0) {
+            
             int pid;
 
             if (numargs < 2) {
@@ -143,11 +152,13 @@ int main (int argc, char** argv) {
                 printf("Erro. Processo não criado\n\n");
                 continue;
             }
-
-            push_pid(pid_list, MAXPROSS, pid); 
             
-            if(pid == 0)                        /* processo filho - simular */
+            if (pid == 0){                        /* processo filho - simular */
                 simular(args[1]);
+            }
+            else {
+                push_pid(pid_list, MAXPROSS, pid); 
+            }
         }
 
         else {

@@ -6,9 +6,11 @@
 #include <signal.h>
 
 #define atrasar() sleep(ATRASO)
+#define ATIVA 1
+#define INATIVA 0
 
 int contasSaldos[NUM_CONTAS];
-
+int flag_terminio = INATIVA;
 
 int contaExiste(int idConta) {
   return (idConta > 0 && idConta <= NUM_CONTAS);
@@ -46,11 +48,14 @@ int lerSaldo(int idConta) {
   return contasSaldos[idConta - 1];
 }
 
-void apanha_sinal() {
-  signal(SIGUSR1,apanha_sinal);
+//o signal ativa uma funcao auxiliar. funcao esta que vai efetivamente interromper o processo. 
+//o kill é o que envia o sinal(recebido pelo signal) para o processo filho
+void apanha_sinal(int pid) { 
+     flag_terminio = ATIVA;
 }
 
 void simular(char *arg2) {
+  signal(SIGUSR1,apanha_sinal);
   int numAnos, i, j;
   int newValue[NUM_CONTAS];
   numAnos = atoi(arg2);
@@ -67,9 +72,12 @@ void simular(char *arg2) {
 
   i = 0;
   while(i <= numAnos) {
-    atrasar();
 
-    signal(SIGUSR1,apanha_sinal);
+    if (flag_terminio == ATIVA){
+        printf("Simulacao terminada por sinal.\n");
+        exit(0);
+    }
+    atrasar();
 
     printf("SIMULACAO: Ano %d\n", i);
     printf("=================\n");
