@@ -50,7 +50,7 @@ int lerSaldo(int idConta) {
 
 //o signal ativa uma funcao auxiliar. funcao esta que vai efetivamente interromper o processo. 
 //o kill é o que envia o sinal(recebido pelo signal) para o processo filho
-void apanha_sinal(int pid) { 
+void apanha_sinal() { 
      flag_terminio = ATIVA;
 }
 
