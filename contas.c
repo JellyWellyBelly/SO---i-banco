@@ -55,12 +55,13 @@ void apanha_sinal(int pid) {
 }
 
 void simular(char *arg2) {
-  signal(SIGUSR1,apanha_sinal);
   int numAnos, i, j;
   int newValue[NUM_CONTAS];
   numAnos = atoi(arg2);
+  
+  signal(SIGUSR1,apanha_sinal);
 
-  if(numAnos <= 0)
+  if(numAnos < 0)
     exit(1);
 
   if(numAnos == 0 && strcmp(arg2,ZERO) != 0)
