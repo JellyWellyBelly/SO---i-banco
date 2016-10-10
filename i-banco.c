@@ -52,7 +52,7 @@ int main (int argc, char** argv) {
                 for(i = 0; i < MAXPROSS; i++)
                     if(pid_list[i] != 0) {
                         pid_wait = waitpid(pid_list[i], &status, 0);
-                        printf("FILHO TERMINADO (PID=%d; terminou %s)\n", pid_wait, (status == 0) ? "normalmente" : "abruptamente");
+                        printf("FILHO TERMINADO (PID=%d; terminou %s)\n", pid_wait, (WEXITSTATUS(status) == 0) ? "normalmente" : "abruptamente");
                     }
                 printf("--\ni-banco terminou.\n");
             }
