@@ -44,19 +44,19 @@ int main (int argc, char** argv) {
 
         /* EOF (end of file) do stdin ou comando "sair" */
         if (numargs < 0 || (numargs > 0 && (strcmp(args[0], COMANDO_SAIR) == 0))) {
-            if (numargs == 1) {                             /* sair */
+            if (numargs == 1) {    /* sair */
                 int i, pid_wait;
 
                 printf("i-banco vai terminar.\n--\n");
                 for(i = 0; i < MAXPROSS; i++)
                     if(pid_list[i] != 0) {
                         pid_wait = waitpid(pid_list[i], &status, 0);
-                        printf("FILHO TERMINADO (PID=%d; terminou %s)\n", pid_wait, (WEXITSTATUS(status) == 0) ? "normalmente" : "abruptamente");
+                        printf("FILHO TERMINADO (PID=%d; terminou %s)\n", pid_wait, (WEXITSTATUS(status) == EXIT_SUCCESS) ? "normalmente" : "abruptamente");
                     }
                 printf("--\ni-banco terminou.\n");
             }
 
-            else if(numargs == 2 && (strcmp(args[1], COMANDO_SAIR_AGORA) == 0)) {                  /* sair agora */
+            else if(numargs == 2 && (strcmp(args[1], COMANDO_SAIR_AGORA) == 0)) {    /* sair agora */
                 int i, sucesso;
 
                 for(i = 0; i < MAXPROSS; i++)
@@ -141,17 +141,17 @@ int main (int argc, char** argv) {
            if(list_full(pid_list, MAXPROSS) == TRUE) {
                 printf("Erro. Demasiados processos\n\n");
                 continue;
-            } 
+            }
 
             pid = fork();
-
+            
             if(pid < 0) {
                 printf("Erro. Processo não criado\n\n");
                 continue;
             }
 
-            push_pid(pid_list, MAXPROSS, pid); 
-            
+            push_pid(pid_list, MAXPROSS, pid);
+
             if(pid == 0)                        /* processo filho - simular */
                 simular(args[1]);
         }

@@ -7,11 +7,10 @@
 
 #define atrasar() sleep(ATRASO)
 #define ATIVO 1
-#define DESATIVO 0
+#define INATIVO 0
 
 int contasSaldos[NUM_CONTAS];
-
-int flag = DESATIVO;
+int flag = INATIVO;
 
 int contaExiste(int idConta) {
 	return (idConta > 0 && idConta <= NUM_CONTAS);
@@ -25,20 +24,20 @@ void inicializarContas() {
 
 int debitar(int idConta, int valor) {
 	atrasar();
-	if (!contaExiste(idConta)) /* verifica se conta existe */
+	if (!contaExiste(idConta))
 		return -1;
-	if (contasSaldos[idConta - 1] < valor) /* verifica se tem saldo suficiente */
+	if (contasSaldos[idConta - 1] < valor)
 		return -1;
 	atrasar();
-	contasSaldos[idConta - 1] -= valor; /* retira dinheiro hehehehe */
+	contasSaldos[idConta - 1] -= valor;
 	return 0;
 }
 
 int creditar(int idConta, int valor) {
 	atrasar();
-	if (!contaExiste(idConta)) /* verifica se conta existe */
+	if (!contaExiste(idConta))
 		return -1;
-	contasSaldos[idConta - 1] += valor; /* mete plin plin */
+	contasSaldos[idConta - 1] += valor;
 	return 0;
 }
 
@@ -75,7 +74,7 @@ void simular(char *arg2) {
 
 		if(flag == ATIVO) {
 			printf("Simulacao terminada por sinal\n");
-			exit(0);
+			exit(EXIT_SUCCESS);
 		}
 
 		printf("SIMULACAO: Ano %d\n", i);
@@ -91,5 +90,5 @@ void simular(char *arg2) {
 		}
 		printf("\n");
 	}
-	exit(0);
+	exit(EXIT_SUCCESS);
 }

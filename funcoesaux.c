@@ -13,7 +13,7 @@ void init_vec_0(int *vec, int size) {
 void push_pid(int *vec, int size, int pid) {
 	int i = 0;
 
-	while(i < size) {
+	while (i < size) {
 		if (vec[i] == 0){
 			vec[i] = pid;
 			return;
@@ -25,7 +25,7 @@ void push_pid(int *vec, int size, int pid) {
 int list_full(int *vec, int size) {
 	int i = 0;
 
-	while(i < size) {
+	while (i < size) {
 		if (vec[i] == 0)
 			return FALSE;
 		i++;
