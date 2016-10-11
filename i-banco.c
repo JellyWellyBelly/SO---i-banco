@@ -57,13 +57,17 @@ int main (int argc, char** argv) {
             }
 
             else if(numargs == 2 && (strcmp(args[1], COMANDO_SAIR_AGORA) == 0)) {    /* sair agora */
-                int i, sucesso;
+                int i, sucesso, pid_wait;
 
                 for(i = 0; i < MAXPROSS; i++)
                     if(pid_list[i] != 0) {
                         sucesso = kill(pid_list[i], SIGUSR1);
                         if(sucesso == -1)
                             printf("Erro: Sinal de terminio nao foi possivel de ser enviado ao processo %d.", pid_list[i]);
+                        else {
+                            pid_wait = waitpid(pid_list[i], &status, 0);
+                            printf("FILHO TERMINADO (PID=%d; terminou %s)\n", pid_wait, (WEXITSTATUS(status) == EXIT_SUCCESS) ? "normalmente" : "abruptamente");
+                        }
                     }
 
             }

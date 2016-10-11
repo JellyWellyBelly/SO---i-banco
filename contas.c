@@ -59,7 +59,7 @@ void simular(char *arg2) {
 
 	signal(SIGUSR1,apanha_sinal);
 
-	if(numAnos <= 0)
+	if(numAnos < 0)
 		exit(1);
 
 	if(numAnos == 0 && strcmp(arg2,ZERO) != 0)
