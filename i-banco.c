@@ -6,7 +6,7 @@
 #include "commandlinereader.h"
 #include "contas.h"
 #include "funcoesaux.h"
-V#include <stdlib.h>
+#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
@@ -16,7 +16,7 @@ V#include <stdlib.h>
 
 #define COMANDO_DEBITAR "debitar"
 #define COMANDO_CREDITAR "creditar"
-*#define COMANDO_LER_SALDO "lerSaldo"
+#define COMANDO_LER_SALDO "lerSaldo"
 #define COMANDO_SIMULAR "simular"
 #define COMANDO_SAIR "sair"
 #define COMANDO_SAIR_AGORA "agora"
@@ -24,6 +24,7 @@ V#include <stdlib.h>
 #define MAXARGS 3
 #define BUFFER_SIZE 100
 #define MAXPROSS 20
+#define ZERO "0"
 
 
 /int main (int argc, char** argv) {
@@ -144,6 +145,15 @@ V#include <stdlib.h>
                 continue;
             }
 
+            int numAnos = atoi(args[1]);
+
+            if(numAnos < 0)
+                break;
+
+            if(numAnos == 0 && strcmp(arg2,ZERO) != 0)
+                break;
+
+
             pid = fork();
             
             if(pid < 0) {
@@ -154,7 +164,7 @@ V#include <stdlib.h>
             push_pid(pid_list, MAXPROSS, pid);
 
             if(pid == 0)  /* Codigo do processo filho. */
-                simular(args[1]);
+                simular(numAnos);
         }
 
         else {

@@ -9,10 +9,7 @@
 #define NUM_CONTAS 10
 #define TAXAJURO 0.1
 #define CUSTOMANUTENCAO 1
-
 #define ATRASO 1
-
-#define ZERO "0"
 
 void inicializarContas();
 int contaExiste(int idConta);
@@ -28,7 +25,7 @@ int lerSaldo(int idConta);
  *   'n' anos. A simulacao nao é alterada por      *
  *   outras funcoes do codigo-pai.                 *
 \* * * * * * * * * * * * * * * * * * * * * * * * * */
-void simular(char* arg2);
+void simular(int numAnos);
 
 
 
