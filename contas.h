@@ -32,7 +32,11 @@ void simular(char* arg2);
 
 
 
-
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\
+ * Recebe: Nada.                                             *
+ * Retorna: Nada.                                            *
+ * Descricao: Funcao que permite terminar o processo filho.  *
+\* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 void apanha_sinal();
 
 #endif
