@@ -19,7 +19,20 @@ int contaExiste(int idConta);
 int debitar(int idConta, int valor);
 int creditar(int idConta, int valor);
 int lerSaldo(int idConta);
+
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * *\
+ * Recebe: String que representa um inteiro.       *
+ * Retorna: Nada.                                  *
+ * Descricao: Simula a evolucao da conta ao fim de *
+ *   'n' anos. A simulacao nao é alterada por      *
+ *   outras funcoes do codigo-pai.                 *
+\* * * * * * * * * * * * * * * * * * * * * * * * * */
 void simular(char* arg2);
+
+
+
+
 void apanha_sinal();
 
 #endif
