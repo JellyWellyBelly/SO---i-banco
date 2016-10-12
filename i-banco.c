@@ -6,7 +6,7 @@
 #include "commandlinereader.h"
 #include "contas.h"
 #include "funcoesaux.h"
-#include <stdlib.h>
+V#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
@@ -16,7 +16,7 @@
 
 #define COMANDO_DEBITAR "debitar"
 #define COMANDO_CREDITAR "creditar"
-#define COMANDO_LER_SALDO "lerSaldo"
+*#define COMANDO_LER_SALDO "lerSaldo"
 #define COMANDO_SIMULAR "simular"
 #define COMANDO_SAIR "sair"
 #define COMANDO_SAIR_AGORA "agora"
@@ -26,7 +26,7 @@
 #define MAXPROSS 20
 
 
-int main (int argc, char** argv) {
+/int main (int argc, char** argv) {
 
     char *args[MAXARGS + 1];
     char buffer[BUFFER_SIZE];
@@ -44,7 +44,7 @@ int main (int argc, char** argv) {
 
         /* EOF (end of file) do stdin ou comando "sair" */
         if (numargs < 0 || (numargs > 0 && (strcmp(args[0], COMANDO_SAIR) == 0))) {
-            if (numargs == 1) {    /* sair */
+            if (numargs == 1) {    /* Comando Sair */
                 int i, pid_wait;
 
                 printf("i-banco vai terminar.\n--\n");
@@ -62,7 +62,7 @@ int main (int argc, char** argv) {
                 for(i = 0; i < MAXPROSS; i++)
                     if(pid_list[i] != 0) {
                         sucesso = kill(pid_list[i], SIGUSR1);
-                        if(sucesso == -1)
+                        if(sucesso == -1) /* Nunca se deve verificar esta condicao. */
                             printf("Erro: Sinal de terminio nao foi possivel de ser enviado ao processo %d.", pid_list[i]);
                         else {
                             pid_wait = waitpid(pid_list[i], &status, 0);
@@ -112,8 +112,7 @@ int main (int argc, char** argv) {
             valor = atoi(args[2]);
 
             if (creditar (idConta, valor) < 0)
-                printf("%s(%d, %d): Erro\n\n", COMANDO_CREDITAR, idConta, valor);
-            else
+                printf("%s(%d, %d): Erro\n\n", COMANDO_CREDITAR, idConta, valor);             else
                 printf("%s(%d, %d): OK\n\n", COMANDO_CREDITAR, idConta, valor);
         }
 
@@ -123,11 +122,9 @@ int main (int argc, char** argv) {
 
             if (numargs < 2) {
                 printf("%s: Sintaxe inválida, tente de novo.\n", COMANDO_LER_SALDO);
-                continue;
-            }
+                continue;            }
             idConta = atoi(args[1]);
-            saldo = lerSaldo (idConta);
-            if (saldo < 0)
+            saldo = lerSaldo (idConta);            if (saldo < 0)
                 printf("%s(%d): Erro.\n\n", COMANDO_LER_SALDO, idConta);
             else
                 printf("%s(%d): O saldo da conta é %d.\n\n", COMANDO_LER_SALDO, idConta, saldo);
@@ -156,7 +153,7 @@ int main (int argc, char** argv) {
 
             push_pid(pid_list, MAXPROSS, pid);
 
-            if(pid == 0)                        /* processo filho - simular */
+            if(pid == 0)  /* Codigo do processo filho. */
                 simular(args[1]);
         }
 
