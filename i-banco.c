@@ -27,7 +27,7 @@
 #define ZERO "0"
 
 
-/int main (int argc, char** argv) {
+int main (int argc, char** argv) {
 
     char *args[MAXARGS + 1];
     char buffer[BUFFER_SIZE];
@@ -55,6 +55,7 @@
                         printf("FILHO TERMINADO (PID=%d; terminou %s)\n", pid_wait, (WEXITSTATUS(status) == EXIT_SUCCESS) ? "normalmente" : "abruptamente");
                     }
                 printf("--\ni-banco terminou.\n");
+                exit(EXIT_SUCCESS);
             }
 
             else if(numargs == 2 && (strcmp(args[1], COMANDO_SAIR_AGORA) == 0)) {    /* sair agora */
@@ -70,7 +71,7 @@
                             printf("FILHO TERMINADO (PID=%d; terminou %s)\n", pid_wait, (WEXITSTATUS(status) == EXIT_SUCCESS) ? "normalmente" : "abruptamente");
                         }
                     }
-
+                    exit(EXIT_SUCCESS);
             }
 
             else {
@@ -113,7 +114,8 @@
             valor = atoi(args[2]);
 
             if (creditar (idConta, valor) < 0)
-                printf("%s(%d, %d): Erro\n\n", COMANDO_CREDITAR, idConta, valor);             else
+                printf("%s(%d, %d): Erro\n\n", COMANDO_CREDITAR, idConta, valor);
+            else
                 printf("%s(%d, %d): OK\n\n", COMANDO_CREDITAR, idConta, valor);
         }
 
@@ -133,7 +135,7 @@
 
         /* Simular */
         else if (strcmp(args[0], COMANDO_SIMULAR) == 0) {
-            int pid;
+            int numAnos, pid;
 
             if (numargs < 2) {
                 printf("%s: Sintaxe inválida, tente de novo.\n", COMANDO_SIMULAR);
@@ -145,12 +147,12 @@
                 continue;
             }
 
-            int numAnos = atoi(args[1]);
+            numAnos = atoi(args[1]);
 
             if(numAnos < 0)
                 break;
 
-            if(numAnos == 0 && strcmp(arg2,ZERO) != 0)
+            if(numAnos == 0 && strcmp(args[1],ZERO) != 0)
                 break;
 
 
@@ -171,4 +173,5 @@
           printf("Comando desconhecido. Tente de novo.\n");
         }
     }
+    return 0;
 }

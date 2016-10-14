@@ -53,14 +53,12 @@ void apanha_sinal() {
 }
 
 void simular(int numAnos) {
+	int i, j, newValue[NUM_CONTAS];
 	
 	signal(SIGUSR1,apanha_sinal);
-	
-	int numAnos, i, j;
-	int newValue[NUM_CONTAS];
-	
+
 	for(j = 0; j < NUM_CONTAS; j++) {
-		newValue[j] = contasSaldos[j];
+		newValue[j] = lerSaldo(j+1);
 	}
 
 	for(i = 0; i <= numAnos; i++) {
@@ -74,12 +72,10 @@ void simular(int numAnos) {
 		printf("SIMULACAO: Ano %d\n", i);
 		printf("=================\n");
 		for(j = 0; j < NUM_CONTAS; j++) {
-			int n = j + 1;
-			
 			if(newValue[j] >= 0)
-				printf("Conta %d, Saldo %d\n", n, newValue[j]);
+				printf("Conta %d, Saldo %d\n", j+1, newValue[j]);
 			else
-				printf("Conta %d, Saldo 0\n", n);
+				printf("Conta %d, Saldo 0\n", j+1);
 			newValue[j] = (newValue[j] * (1 + TAXAJURO) - CUSTOMANUTENCAO);
 		}
 		printf("\n");

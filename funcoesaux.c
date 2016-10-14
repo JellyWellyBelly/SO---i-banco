@@ -14,7 +14,7 @@ void push_pid(int *vec, int size, int pid) {
 	int i = 0;
 
 	while (i < size) {
-		if (vec[i] == 0){
+		if (vec[i] == 0) {
 			vec[i] = pid;
 			return;
 		}
