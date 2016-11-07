@@ -1,41 +1,31 @@
 /*
-// Projeto SO - exercicio 1, version 1
-// Sistemas Operativos, DEI/IST/ULisboa 2016-17
-*/
+ * 
+ *               I-BANCO
+ * 
+ *  Projeto SO - Exercicio 2, version 1
+ *  Sistemas Operativos, DEI/IST/ULisboa 2016-17
+ *  
+ *  Co-autores: Tomas Carrasco nº 84774
+ *              Miguel Viegas nº 84747
+ *
+ */
 
-#include "commandlinereader.h"
-#include "contas.h"
-#include "funcoesaux.h"
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <signal.h>
-
-#define COMANDO_DEBITAR "debitar"
-#define COMANDO_CREDITAR "creditar"
-#define COMANDO_LER_SALDO "lerSaldo"
-#define COMANDO_SIMULAR "simular"
-#define COMANDO_SAIR "sair"
-#define COMANDO_SAIR_AGORA "agora"
-
-#define MAXARGS 3
-#define BUFFER_SIZE 100
-#define MAXPROSS 20
-#define ZERO "0"
-
+#include "mymacros.h"
 
 int main (int argc, char** argv) {
 
     char *args[MAXARGS + 1];
     char buffer[BUFFER_SIZE];
+
     int pid_list[MAXPROSS], status;
 
     inicializarContas();
     init_vec_0(pid_list,MAXPROSS);
-    
+
+    cria_pool();
+    init_sem();
+    init_trincos(NUM_CONTAS);
+
     printf("Bem-vinda/o ao i-banco\n\n");
       
     while (1) {
@@ -45,37 +35,35 @@ int main (int argc, char** argv) {
 
         /* EOF (end of file) do stdin ou comando "sair" */
         if (numargs < 0 || (numargs > 0 && (strcmp(args[0], COMANDO_SAIR) == 0))) {
-            if (numargs == 1) {    /* Comando Sair */
-                int i, pid_wait;
+            if (numargs <= 2) {    /* Comando Sair */
+                int i, pid_wait, tid_join;
+
+                for(i = 0; i < NUM_TRABALHADORAS; i++) /* Envio da operacao sair */
+                    produz(OP_SAIR, ATRIBUTO_NULL, ATRIBUTO_NULL, ATRIBUTO_NULL);
+
+                for(i = 0; i < NUM_TRABALHADORAS; i++) { /* Terminio das tarefas trabalhadoras */
+                    tid_join = pthread_join(tid[i], NULL);
+                    if(tid_join == 0)
+                        printf("TAREFA TERMINADA COM SUCESSO (TID=%ld)\n", tid[i]);
+                    else
+                        printf("ERRO: TAREFA TERMINADA ABRUPTAMENTE\n");
+
+                }
 
                 printf("i-banco vai terminar.\n--\n");
                 for(i = 0; i < MAXPROSS; i++)
                     if(pid_list[i] != 0) {
+                        if(numargs > 1 && strcmp(args[1], COMANDO_SAIR_AGORA) == 0) { /* excepcao do sair agora */
+                            kill(pid_list[i], SIGUSR1);
+                        }
                         pid_wait = waitpid(pid_list[i], &status, 0);
-                        printf("FILHO TERMINADO (PID=%d; terminou %s)\n", pid_wait, (WEXITSTATUS(status) == EXIT_SUCCESS) ? "normalmente" : "abruptamente");
+                        printf("FILHO TERMINADO (PID=%d; terminou %s)\n", pid_wait, (WIFEXITED(status)) ? "normalmente" : "abruptamente");
                     }
                 printf("--\ni-banco terminou.\n");
-                exit(EXIT_SUCCESS);
-            }
-
-            else if(numargs == 2 && (strcmp(args[1], COMANDO_SAIR_AGORA) == 0)) {    /* sair agora */
-                int i, sucesso, pid_wait;
-
-                for(i = 0; i < MAXPROSS; i++)
-                    if(pid_list[i] != 0) {
-                        sucesso = kill(pid_list[i], SIGUSR1);
-                        if(sucesso == -1) /* Nunca se deve verificar esta condicao. */
-                            printf("Erro: Sinal de terminio nao foi possivel de ser enviado ao processo %d.", pid_list[i]);
-                        else {
-                            pid_wait = waitpid(pid_list[i], &status, 0);
-                            printf("FILHO TERMINADO (PID=%d; terminou %s)\n", pid_wait, (WEXITSTATUS(status) == EXIT_SUCCESS) ? "normalmente" : "abruptamente");
-                        }
-                    }
-                    exit(EXIT_SUCCESS);
             }
 
             else {
-                printf("%s: Sintaxe inválida, tente de novo.\n", COMANDO_SAIR);
+                printf("%s: Sintaxe inválida, tente de novo.\n\n", COMANDO_SAIR);
             }            
             
             exit(EXIT_SUCCESS);
@@ -84,53 +72,91 @@ int main (int argc, char** argv) {
         else if (numargs == 0)
             /* Nenhum argumento; ignora e volta a pedir */
             continue;
-            
+
         /* Debitar */
         else if (strcmp(args[0], COMANDO_DEBITAR) == 0) {
             int idConta, valor;
+
             if (numargs < 3) {
-                printf("%s: Sintaxe inválida, tente de novo.\n", COMANDO_DEBITAR);
+                printf("%s: Sintaxe inválida, tente de novo.\n\n", COMANDO_DEBITAR);
 	           continue;
             }
 
             idConta = atoi(args[1]);
             valor = atoi(args[2]);
 
-            if (debitar (idConta, valor) < 0)
-	           printf("%s(%d, %d): OK\n\n", COMANDO_DEBITAR, idConta, valor);
-            else
-               printf("%s(%d, %d): OK\n\n", COMANDO_DEBITAR, idConta, valor);
+            if (!contaExiste(idConta)) {
+                printf("%s(%d): Conta não existe.\n\n", COMANDO_DEBITAR, idConta);
+                continue;
+            }
+
+
+            produz(OP_DEBITAR, idConta, ATRIBUTO_NULL, valor);
         }
 
         /* Creditar */
         else if (strcmp(args[0], COMANDO_CREDITAR) == 0) {
             int idConta, valor;
+
             if (numargs < 3) {
-                printf("%s: Sintaxe inválida, tente de novo.\n", COMANDO_CREDITAR);
+                printf("%s: Sintaxe inválida, tente de novo.\n\n", COMANDO_CREDITAR);
                 continue;
             }
 
             idConta = atoi(args[1]);
             valor = atoi(args[2]);
 
-            if (creditar (idConta, valor) < 0)
-                printf("%s(%d, %d): Erro\n\n", COMANDO_CREDITAR, idConta, valor);
-            else
-                printf("%s(%d, %d): OK\n\n", COMANDO_CREDITAR, idConta, valor);
+            if (!contaExiste(idConta)) {
+                printf("%s(%d): Conta não existe.\n\n", COMANDO_CREDITAR, idConta);
+                continue;
+            }
+
+            produz(OP_CREDITAR, idConta, ATRIBUTO_NULL, valor);
         }
 
         /* Ler Saldo */
         else if (strcmp(args[0], COMANDO_LER_SALDO) == 0) {
-            int idConta, saldo;
+            int idConta;
 
             if (numargs < 2) {
-                printf("%s: Sintaxe inválida, tente de novo.\n", COMANDO_LER_SALDO);
-                continue;            }
+                printf("%s: Sintaxe inválida, tente de novo.\n\n", COMANDO_LER_SALDO);
+                continue;            
+            }
+
             idConta = atoi(args[1]);
-            saldo = lerSaldo (idConta);            if (saldo < 0)
-                printf("%s(%d): Erro.\n\n", COMANDO_LER_SALDO, idConta);
-            else
-                printf("%s(%d): O saldo da conta é %d.\n\n", COMANDO_LER_SALDO, idConta, saldo);
+
+            if (!contaExiste(idConta)) {
+                printf("%s(%d): Conta não existe.\n\n", COMANDO_LER_SALDO, idConta);
+                continue;
+            }
+
+            produz(OP_LERSALDO, idConta, ATRIBUTO_NULL, ATRIBUTO_NULL);
+        }
+
+        /* Transferir */
+        else if(strcmp(args[0], COMANDO_TRANSFERIR) == 0) {
+            int idContaOrigem, idContaDestino, valor;
+
+            if(numargs < 4) {
+                printf("%s: Sintaxe inválida, tente de novo.\n\n", COMANDO_TRANSFERIR);
+                continue;
+            }
+
+            idContaOrigem = atoi(args[1]);
+            idContaDestino = atoi(args[2]);
+            valor = atoi(args[3]);
+
+            if (!contaExiste(idContaOrigem) || !contaExiste(idContaDestino)) {
+                printf("%s(%d, %d): Conta não existe.\n\n", COMANDO_DEBITAR, idContaOrigem, idContaDestino);
+                continue;
+            }
+
+            if(idContaOrigem == idContaDestino) {
+                printf("%s(%d, %d): id das contas inválidas.\n\n", COMANDO_TRANSFERIR, idContaOrigem, idContaDestino);
+                continue;
+            }
+
+            produz(OP_TRANSFERIR, idContaOrigem, idContaDestino, valor);
         }
 
         /* Simular */
@@ -138,7 +164,7 @@ int main (int argc, char** argv) {
             int numAnos, pid;
 
             if (numargs < 2) {
-                printf("%s: Sintaxe inválida, tente de novo.\n", COMANDO_SIMULAR);
+                printf("%s: Sintaxe inválida, tente de novo.\n\n", COMANDO_SIMULAR);
                 continue;
             }
 
@@ -149,12 +175,10 @@ int main (int argc, char** argv) {
 
             numAnos = atoi(args[1]);
 
-            if(numAnos < 0)
-                break;
-
-            if(numAnos == 0 && strcmp(args[1],ZERO) != 0)
-                break;
-
+            if(numAnos < 0 || (numAnos == 0 && strcmp(args[1],ZERO) != 0)) {
+                printf("%s(%s): Numero de anos inválido.\n\n", COMANDO_SIMULAR, args[1]);
+                continue;
+            }
 
             pid = fork();
             
@@ -170,7 +194,7 @@ int main (int argc, char** argv) {
         }
 
         else {
-          printf("Comando desconhecido. Tente de novo.\n");
+            printf("Comando desconhecido. Tente de novo.\n\n");
         }
     }
     return 0;

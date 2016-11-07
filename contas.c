@@ -1,13 +1,4 @@
 #include "contas.h"
-#include <unistd.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <signal.h>
-
-#define atrasar() sleep(ATRASO)
-#define ATIVO 1
-#define INATIVO 0
 
 int contasSaldos[NUM_CONTAS];
 int flag = INATIVO;
@@ -24,28 +15,28 @@ void inicializarContas() {
 
 int debitar(int idConta, int valor) {
 	atrasar();
-	if (!contaExiste(idConta))
-		return -1;
 	if (contasSaldos[idConta - 1] < valor)
 		return -1;
-	atrasar();
+
 	contasSaldos[idConta - 1] -= valor;
 	return 0;
 }
 
 int creditar(int idConta, int valor) {
 	atrasar();
-	if (!contaExiste(idConta))
-		return -1;
 	contasSaldos[idConta - 1] += valor;
 	return 0;
 }
 
 int lerSaldo(int idConta) {
 	atrasar();
-	if (!contaExiste(idConta))
-		return -1;
 	return contasSaldos[idConta - 1];
+}
+
+int transferir(int idContaOrigem, int idContaDestino, int valor) {
+	debitar(idContaOrigem, valor);
+	creditar(idContaDestino, valor);
+	return 0;
 }
 
 void apanha_sinal() {
